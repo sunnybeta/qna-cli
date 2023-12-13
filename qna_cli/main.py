@@ -1,3 +1,4 @@
+import sys
 import os
 from typing import List, Dict
 from operator import add, sub
@@ -13,7 +14,9 @@ Global State Management: topic
 """
 
 
-PATH: str = os.path.dirname(os.path.abspath(__file__))
+TOPIC = ''
+
+PATH: str = os.path.dirname(os.path.abspath(__file__)) + '/'
 UPDATE_SCORE: int = 5
 MAX_SCORE: int = 100
 MIN_SCORE: int = 0
@@ -43,13 +46,14 @@ def main_menu() -> None:
     """
     Display options of the Main Menu
     """
-    print('* Create Topic (ct)')
+    print('* Add Topic    (at)')
     print('* Add Card     (ac)')
-    print('* Modify Topic (mt)')
-    print('* Modify Card  (mc)')
+    print('* List Topic   (lt)')
+    print('* List Card    (lc)')
     print('* Revise       (r)')
     print('* Quit         (q)')
-    print('* Repeat       (0)')
+    # print('* Modify Topic  (mt)')
+    # print('* Modify Card   (mc)')
 
 
 def create_topic() -> None:
@@ -57,30 +61,51 @@ def create_topic() -> None:
     filename = new_topic.strip(' ').lower()
     os.mkdir(PATH + filename)
 
-def main_menu_nav() -> None:
-    choice = input()
-    if choice == '0':
-        main_menu()
-        main_menu_nav()
-    if choice == 'ct':
-        list_topics()
+def force_select_topic():
+    if not TOPIC:
+        select_topic(list_topics())
 
+def nav() -> None:
+    choice = input()
+    if choice == 'at':
+        add_topic()
+    elif choice == 'lt':
+        list_topics()
+    elif choice == 'lc':
+        force_select_topic()
+        list_cards()
+    elif choice == 'ac':
+        force_select_topic()
+        add_question()
+    elif choice == 'r':
+        force_select_topic()
+        revise()
+    elif choice == 'q':
+        quit()
+    print("X - - - * - - - X - - - * - - - X")
+    main_menu()
+    nav()
+
+def quit():
+    sys.exit()
 
 @padding
 def list_topics() -> List[str]:
     topics = []
     for _, _, filenames in os.walk(PATH):
-        topics = [filename for filename in filenames if filename != '__init__.py' and filename != 'main.py']
+        topics = [filename.replace('.json','').lower() for filename in filenames if filename != '__init__.py' and filename != 'main.py']
     for topic in topics:
-        print(f'* {topic.replace('.json','').upper()}')
+        print(f'* {topic.upper()}')
     return topics
 
 @padding
-def select_topic(topics: List[str]) -> str:
-    print('Choose a topic:')
+def select_topic(topics: List[str]) -> str | None:
+    global TOPIC
+    print('Choose a topic:', end = ' ')
     selection = input()
     if selection.lower() in topics:
-        return selection.lower()
+        TOPIC = selection.lower()
+        return
     return select_topic(topics)
 
 @padding
@@ -105,19 +130,31 @@ def update_score(card: dict, correct=True) -> None:
     operator = add if correct else sub
     card['s'] = operator(card['s'], UPDATE_SCORE)
 
-def save(cards: List[Dict], topic: str) -> None:
+def save(cards: List[Dict]) -> None:
     """
     Save the currect set of card scores
     """
-    filename = PATH + topic
+    filename = PATH + TOPIC + '.json'
     with open(filename,'w') as fp:
-        json.dump(cards,fp)
+        json.dump(cards,fp, indent=2)
 
-def load(topic: str) -> List[Dict]:
+def display_card(card):
+    print('---')
+    ask_question(card['q'])
+    print('.')
+    show_answer(card['a'])
+    print('---')
+
+def list_cards():
+    cards = load();
+    for card in cards:
+        display_card(card)
+
+def load() -> List[Dict]:
     """
     Load cards of a particular topic
     """
-    filename = PATH + topic
+    filename = PATH + TOPIC + '.json'
     with open(filename,'r') as fp:
         cards = json.load(fp)
     return cards
@@ -148,8 +185,8 @@ def test(card) -> None | str:
     # handle a c i n s e options
     return 
 
-def revise(topic: str) -> None:
-    cards = load(topic)
+def revise() -> None:
+    cards = load()
     for card in cards:
         response = test(card)
         if response == 1:
@@ -160,6 +197,7 @@ def revise(topic: str) -> None:
             update_score(card)
         if response == 'e':
             break;
+    save(cards)
     del cards
 
 @padding
@@ -174,26 +212,36 @@ def summarize(topic: str, cards: List[Dict]) -> None:
     print('Bye Bye')
 
 
-def add_question(topic):
-    q,a = get_qna()
-    cards = load(topic=topic)
-    cards.append({'q':q, 'a':a, 's':[0]})
-    save(cards=cards, topic=topic)
+@padding
+def add_topic():
+    print('Topic Name:', end=' ')
+    name = input()
+    filename = PATH + name + '.json' 
+    if os.path.isfile(PATH + name + '.json'):
+        print()
+        print('Topic already exists')
+        print()
+        return
+    with open(filename,'w') as fp:
+        fp.write('[]')
+    print('Topic Created Successfully')
 
 
-def get_qna():
+@padding
+def add_question():
     print('Q.', end=' ')
     q = input()
-    print('Q.', end=' ')
+    print('A.', end=' ')
     a = input()
-    return q,a
+    cards = load()
+    cards.append({'q':q, 'a':a, 's':0})
+    save(cards=cards)
+
 
 def main():
     welcome()
-    while True:
-        main_menu()
-        break;
-
+    main_menu()
+    nav()
 
 if __name__ == '__main__':
     main()
