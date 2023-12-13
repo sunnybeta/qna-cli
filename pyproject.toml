@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "QnA CLI"
+name = "QnA"
 version = "1.0"
 authors = [
   { name="Sunny Beta", email="sunnybeta@protonmail.com" },
