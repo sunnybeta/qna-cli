@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "QnA CLI"
+version = "1.0"
+authors = [
+  { name="Sunny Beta", email="sunnybeta@protonmail.com" },
+]
+description = "Prepare Questions and Answers for future revisions"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+qna_cli = "qna_cli.main:main"
+
+[project.urls]
+"Homepage" = "https://github.com/sunnybeta/qna-cli"
+"Bug Tracker" = "https://github.com/sunnybeta/qna-cli/issues"
+
