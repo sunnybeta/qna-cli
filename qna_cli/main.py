@@ -66,7 +66,7 @@ def force_select_topic():
         select_topic(list_topics())
 
 def nav() -> None:
-    choice = input()
+    choice = input().lower()
     if choice == 'at':
         add_topic()
     elif choice == 'lt':
@@ -102,9 +102,9 @@ def list_topics() -> List[str]:
 def select_topic(topics: List[str]) -> str | None:
     global TOPIC
     print('Choose a topic:', end = ' ')
-    selection = input()
-    if selection.lower() in topics:
-        TOPIC = selection.lower()
+    selection = input().lower()
+    if selection in topics:
+        TOPIC = selection
         return
     return select_topic(topics)
 
@@ -171,19 +171,26 @@ def revision_options() -> None:
     print('* [S]ave               :)')
     print('* [E]nd                x)')
 
-def test(card) -> None | str:
+def test(card) -> str | int | None:
     """
     Ask question on a particular card
     """
     ask_question(card['q'])
     revision_options()
     response = input()
+    if response == 'c':
+        return 1
+    if response == 'i':
+        return -1
+    if response == 'n':
+        return 0 
     if response == 'e':
-        return response
+        return 'e'
     if response == 's':
-        pass
-    # handle a c i n s e options
-    return 
+        return 's'
+    if response == 'a':
+        show_answer(card['a'])
+        test(card)
 
 def revise() -> None:
     cards = load()
@@ -193,9 +200,9 @@ def revise() -> None:
             update_score(card)
         elif response == -1:
             update_score(card, False)
-        else:
-            update_score(card)
         if response == 'e':
+            break;
+        if response == 's':
             break;
     save(cards)
     del cards
@@ -216,8 +223,8 @@ def summarize(topic: str, cards: List[Dict]) -> None:
 def add_topic():
     print('Topic Name:', end=' ')
     name = input()
-    filename = PATH + name + '.json' 
-    if os.path.isfile(PATH + name + '.json'):
+    filename = PATH + name.lower() + '.json' 
+    if os.path.isfile(filename):
         print()
         print('Topic already exists')
         print()
