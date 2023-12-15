@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 [project.scripts]
-qna_cli = "qna_cli.main:main"
+qna = "qna.main:main"
 
 [project.urls]
 "Homepage" = "https://github.com/sunnybeta/qna-cli"
